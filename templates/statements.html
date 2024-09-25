@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personality Test</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div id="statement-container">
+</div>
+
+<script>
+  var statements = []; 
+  var currentIndex = 0; 
+  
+  function displayStatement(index) {
+    var statement = statements[index];
+    var statementHTML = '<div>';
+    statementHTML += '<h3>Statement ' + statement.statement_number + '</h3>';
+    statementHTML += '<p>' + statement.statement_choices[0].choice_text + '</p>';
+    statementHTML += '<button onclick="choose(\'' + statement.statement_choices[0].choice_result + '\')">Option 1</button>';
+    statementHTML += '<p>' + statement.statement_choices[1].choice_text + '</p>';
+    statementHTML += '<button onclick="choose(\'' + statement.statement_choices[1].choice_result + '\')">Option 2</button>';
+    statementHTML += '</div>';
+    $('#statement-container').html(statementHTML);
+  }
+
+  function choose(result) {
+    $.ajax({
+      type: 'POST',
+      url: '/update_result',
+      data: { result: result },
+      success: function(response) {
+        currentIndex++;
+        if (currentIndex < statements.length) {
+          displayStatement(currentIndex);
+        } else {
+          $('#statement-container').html('<h3>Personality test completed!</h3><p>Your result is: ' + response.result + '</p>');
+        }
+      },
+      error: function(error) {
+        console.error('Error updating result:', error);
+      }
+    });
+  }
+
+  $(document).ready(function() {
+    $.getJSON('actiontype_statements.json', function(data) {
+      statements = data;
+      displayStatement(currentIndex);
+    });
+  });
+</script>
+
+</body>
+</html>
